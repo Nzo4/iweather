@@ -1,0 +1,153 @@
+@import '../../styles/mixins.scss';
+@import '../../styles/media.scss';
+
+.weather-header {
+  padding: 12px;
+  background: var(--gray-800);
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.weather-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  flex-direction: column;
+  border-radius: 8px;
+  height: 300px;
+}
+
+.date {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  flex-direction: column;
+  padding: 20px;
+
+  &-city {
+    @include heading-sm;
+    color: var(--white);
+  }
+
+  &-info {
+    @include text-xs;
+    color: var(--white);
+  }
+}
+
+.shortWeather {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding-inline: 20px;
+
+  @include mobile {
+    grid-template-columns: repeat(2, 40%);
+  }
+}
+
+.gradusInfo {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  flex-shrink: 1;
+
+  &-h1 {
+    @include heading-xl;
+    color: var(--white);
+  }
+
+  &-span-gradus {
+    @include heading-sm;
+    color: var(--white);
+    padding-top: 8px;
+  }
+
+  &-span-text {
+    @include text-sm;
+    color: var(--white);
+  }
+}
+
+
+.weather-main {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--gray-800);
+  border-radius: 12px;
+}
+
+.fullWeather {
+  &-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    height: 55px;
+    width: 100%;
+    border-bottom: 1px solid var(--gray-700);
+    background-color: var(--gray-800);
+
+    &-info {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+
+      &-icon {
+        color: var(--gray-500);
+      }
+
+      &-span {
+        @include heading-md;
+        color: var(--gray-200);
+        margin-right: 16px;
+      }
+
+      &-cel {
+        @include heading-sm;
+        color: var(--white);
+      }
+    }
+  }
+}
+
+.weather-footer {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 12px;
+  background: var(--gray-800);
+  border-radius: 12px;
+}
+
+.current-weather-icon {}
+
+.weather-cart-day {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.dayOfWeek {
+  @include heading-md;
+  color: var(--gray-200);
+}
+
+.temp-max {
+  @include heading-md;
+  color: var(--gray-100)
+}
+
+.temp-min {
+  @include heading-md;
+  color: var(--gray-400);
+}
+
+.weatherForFiveDays {
+  color: var(--white);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+
+}

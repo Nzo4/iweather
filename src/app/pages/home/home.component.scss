@@ -1,0 +1,77 @@
+@import '../../styles/mixins.scss';
+@import '../../styles/media.scss';
+
+.header-logo {
+  padding-top: 48px;
+}
+
+.main {
+  margin-inline: auto;
+  margin-block-start: 40vh;
+  transform: translateY(-50%);
+  width: 310px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.greetings {
+  text-wrap: nowrap;
+  text-align: center;
+
+  @include mobile {
+    text-wrap: wrap;
+  }
+
+  &-h1 {
+    @include heading-lg;
+    color: var(--white);
+  }
+
+  &-span {
+    color: var(--logo-color);
+  }
+
+  &-h2 {
+    color: var(--gray-200);
+    padding: 0;
+    margin: 0;
+    @include text-md;
+  }
+}
+
+.search-input {
+  width: 100%;
+  height: var(--input-height);
+  border-radius: var(--input-rounded);
+  text-indent: var(--indent-text);
+  color: var(--gray-100);
+  border: none;
+  outline: none;
+  background-color: var(--gray-600);
+  margin-top: 32px;
+
+  &::placeholder {
+    color: var(--gray-400);
+  }
+}
+
+.locations {
+  display: flex;
+  align-items: center;
+  margin-top: 1px;
+  width: 100%;
+  height: 54px;
+  background-color: var(--gray-500);
+  color: var(--gray-100);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.city {
+  padding-left: 20px;
+  text-align: start;
+  padding-top: 5px;
+  text-wrap: wrap;
+}

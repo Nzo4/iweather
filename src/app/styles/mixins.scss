@@ -1,0 +1,56 @@
+//Start heading setting 
+@mixin heading-hg {
+  font-size: 96px;
+  line-height: 100%;
+  font-weight: 800;
+}
+
+@mixin heading-xl {
+  font-size: 48px;
+  line-height: 120%;
+  font-weight: 800;
+}
+
+@mixin heading-lg {
+  font-size: 32px;
+  line-height: 140%;
+  font-weight: 700;
+}
+
+@mixin heading-sm {
+  font-size: 16px;
+  line-height: 140%;
+  font-weight: 700;
+}
+
+@mixin heading-md {
+  font-size: 14px;
+  line-height: 140%;
+  font-weight: 700;
+}
+
+@mixin text-lg {
+  font-size: 20px;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+@mixin text-md {
+  font-size: 16px;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+@mixin text-sm {
+  font-size: 14px;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+@mixin text-xs {
+  font-size: 12px;
+  line-height: 140%;
+  font-weight: 400;
+}
+
+//End heading setting 

@@ -1,0 +1,19 @@
+<div class="container block-center-col">
+  <header class="header-logo">
+    <img src="../../assets/images/Logo.png" alt="">
+  </header>
+  <main class="main">
+    <div class="greetings">
+      <h1 class="greetings-h1">Добро пожаловать в <span class="greetings-span">TypeWeather</span></h1>
+      <h2 class="greetings-h2">Выберите место, чтобы увидеть прогноз погоды</h2>
+    </div>
+    <input (input)="suggestLocation(locationName)" [(ngModel)]="locationName" class="search-input" type="text"
+      placeholder="Искать местоположение">
+    <ng-template [ngIf]="currentlocations.length">
+      <div *ngFor="let location of currentlocations" class="locations">
+        <span (click)="getWeatherPlan(location.display_place)" class="city">{{location.display_place}}</span>
+      </div>
+    </ng-template>
+  </main>
+
+</div>
