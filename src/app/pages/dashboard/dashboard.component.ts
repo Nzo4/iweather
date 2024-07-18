@@ -1,8 +1,7 @@
 import { CommonModule, registerLocaleData } from "@angular/common";
 import { Component, LOCALE_ID } from "@angular/core";
 import { ActivatedRoute, } from "@angular/router";
-import { DayOfWeek } from "src/app/constants/day-of-week";
-import { WeatherOnAddress } from "src/app/constants/weather-on-address";
+import { CurrentWeather, DailyWeather } from "src/app/constants/weather";
 import { WeatherService } from "src/app/services/weather.service";
 import localeRu from '@angular/common/locales/ru';
 
@@ -19,13 +18,21 @@ registerLocaleData(localeRu, 'ru-RU');
 })
 
 export class DashboardComponent {
+  currentWeather: CurrentWeather = {
+    time: '',
+    interval: 0,
+    temperature_2m: 0,
+    relative_humidity_2m: 0,
+    apparent_temperature: 0,
+    is_day: 0,
+    precipitation: 0,
+    rain: 0,
+    weather_code: 0,
+    cloud_cover: 0,
+    wind_speed_10m: 0,
+  }
 
-  currentWeather: WeatherOnAddress = {
-    current: {},
-    daily: {},
-  };
-
-  dayOfWeek: DayOfWeek = {
+  dailyWeather: DailyWeather = {
     apparent_temperature_max: [],
     apparent_temperature_min: [],
     precipitation_probability_max: [],
@@ -34,31 +41,33 @@ export class DashboardComponent {
     uv_index_max: [],
   }
 
+  weatherMap = new Map([
+    ["day-clear", { isDay: 1, isRain: 0, cloudCover: ["Ясная погода", "Незначительная облачность"] }],
+    ["day-few-cloudy", { isDay: 1, isRain: 0, cloudCover: ["Небольшая облачность"] }],
+    ["day-cloudy", { isDay: 1, isRain: 0, cloudCover: ["Значительная облачность", "Облачно", "Пасмурно"] }],
+    ["day-rain", { isDay: 1, isRain: 1 }],
+    ["night-clear", { isDay: 0, isRain: 0, cloudCover: ["Ясная погода", "Незначительная облачность"] }],
+    ["night-few-cloudy", { isDay: 0, isRain: 0, cloudCover: ["Небольшая облачность"] }],
+    ["night-cloudy", { isDay: 0, isRain: 0, cloudCover: ["Значительная облачность", "Облачно", "Пасмурно"] }],
+    ["night-rain", { isDay: 0, isRain: 1 }]
+  ]);
+
   address!: string;
   cloudState!: string;
-  iconCurrentWeatherState!: string;
-  iconDayOfWeekUrl!: string;
+  weatherCurrentIcon!: string;
 
   constructor(private weatherService: WeatherService, private route: ActivatedRoute,) {
     this.route.queryParams.subscribe((params) => {
       const { address, lat, lon } = params;
       this.address = address;
-      this.weatherService.getWeatherData(lat, lon).subscribe(data => {
-        this.currentWeather = data;
-        this.dayOfWeek = data.daily;
-
-        this.cloudState = this.cloudCoverCalc(this.currentWeather.current.cloud_cover);
-        this.changeWeather(
-          this.currentWeather.current.is_day,
-          this.currentWeather.current.rain,
-          this.currentWeather.current.cloud_cover
-        );
-
+      this.weatherService.getWeatherData(lat, lon).subscribe(weather => {
+        this.currentWeather = weather.current;
+        this.dailyWeather = weather.daily;
+        this.cloudState = this.cloudCoverCalc(this.currentWeather.cloud_cover);
+        this.changeCurrentWeather(this.currentWeather.is_day, this.currentWeather.rain, this.cloudState);
       })
     })
   }
-
-
 
   cloudCoverCalc(cloudCover: number): string {
     if (cloudCover >= 0 && cloudCover <= 10) {
@@ -78,68 +87,87 @@ export class DashboardComponent {
     }
   }
 
-
-  changeWeather(isDay: number, isRain: number, cloudCover: number) {
-    const weatherHeader = document.getElementsByClassName('weather-block-header')[0] as HTMLElement;
-    if (isDay === 1) {
-      weatherHeader.style.backgroundImage = "url('../../../assets/images/day-clear.png')";
-      this.iconCurrentWeatherState = "../../assets/icons/day-clear.svg"
-      if (cloudCover >= 1 && cloudCover <= 4) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/day-cloudy.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/day-cloudy.svg"
-      }
-      else if (cloudCover >= 5) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/day-few-cloudy.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/day-few-cloudy.svg"
-      }
-      if (isRain === 1) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/rain-day.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/rain-day.svg"
-      }
-    } else {
-      weatherHeader.style.backgroundImage = "url('../../../assets/images/night-clear.png')";
-      this.iconCurrentWeatherState = "../../assets/icons/night-clear.svg"
-
-      if (cloudCover >= 1 && cloudCover <= 4) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/night-cloudy.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/night-cloudy.svg"
-      }
-      else if (cloudCover >= 5) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/day-few-cloudy.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/night-few-cloudy.svg"
-      }
-      if (isRain === 1) {
-        weatherHeader.style.backgroundImage = "url('../../../assets/images/rain-night.png')";
-        this.iconCurrentWeatherState = "../../assets/icons/rain-night.svg"
+  getWeather(isDay: number, isRain: number, cloudState: string) {
+    for (let [key, value] of this.weatherMap.entries()) {
+      if (value.isDay === isDay && value.isRain === isRain && (value.cloudCover ? value.cloudCover.includes(cloudState) : true)) {
+        return key;
       }
     }
-
+    return true;
   }
 
-  changeIconWeather(weatherCode: number): string {
+  changeCurrentWeather(isDay: number, isRain: number, cloudState: string) {
+    const currentWeather = this.getWeather(isDay, isRain, cloudState);
+    const backgroundImg = document.getElementsByClassName('weather-block-header')[0] as HTMLElement;
+    switch (currentWeather) {
+      case 'day-clear': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/clear-day-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/clear-day-icon.svg';
+        break;
+      };
+      case 'day-few-cloudy': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/few-cloudy-day-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/few-cloudy-day-icon.svg';
+        break;
+      }
+      case 'day-cloudy': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/cloudy-day-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/cloudy-day-icon.svg';
+        break;
+      }
+      case 'day-rain': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/rain-day-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/rain-day-icon.svg';
+        break;
+      }
+      case 'night-clear': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/clear-night-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/clear-night-icon.svg';
+        break;
+      }
+      case 'night-few-cloudy': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/few-cloudy-night-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/few-cloudy-night-icon.svg';
+        break;
+      }
+      case 'night-cloudy': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/cloudy-night-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/cloudy-night-icon.svg';
+        break;
+      }
+      case 'night-rain': {
+        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/rain-night-bg.png')";
+        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/rain-night-icon.svg';
+        break;
+      }
+    }
+  }
+
+  getWeatherDaily(weatherCode: number): string {
     switch (weatherCode) {
       case 0:
-        return "../../assets/icons/day-clear.svg";
+        return "../../../assets/icons/weather-icons/clear-day-icon.svg";
       case 1:
-        return '../../assets/icons/day-cloudy.svg';
+        return "../../../assets/icons/weather-icons/few-cloudy-day-icon.svg";
       case 2:
       case 3:
-        return '../../assets/icons/day-cloudy.svg';
+        return "../../../assets/icons/weather-icons/cloudy-day-icon.svg";
       case 61:
       case 63:
       case 65:
       case 80:
       case 81:
       case 82:
+        return "../../../assets/icons/weather-icons/rain-day-icon.svg";
       case 95:
       case 96:
       case 99:
-        return '../../assets/icons/rain-day.svg';
+        return "../../assets/icons/weather-icons/storm-day-icon.svg";
       default:
-        return "../../assets/icons/day-clear.svg";
+        return "../../assets/icons/weather-icons/clear-day-icon.svg";
     }
   }
 
-
 }
+
 

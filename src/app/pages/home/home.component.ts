@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { WeatherService } from "../../services/weather.service";
 import { FormsModule } from "@angular/forms";
-import { debounceTime, distinctUntilChanged, filter, Subject, switchMap } from "rxjs";
+import { debounceTime, distinct, distinctUntilChanged, filter, first, Subject, switchMap } from "rxjs";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 

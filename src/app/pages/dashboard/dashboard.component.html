@@ -3,19 +3,17 @@
     <div class="weather-block-header">
       <div class="date">
         <span class="date-city">{{this.address | titlecase}} </span>
-        <span class="date-info">{{ this.currentWeather.current.time | date:'fullDate' | titlecase }}</span>
+        <span class="date-info">{{ this.currentWeather.time | date:'fullDate' | titlecase }}</span>
       </div>
       <div class="shortWeather">
         <div class="gradusInfo">
           <h1 class="gradusInfo-h1">
-            {{this.currentWeather.current.temperature_2m}}ºc</h1>
-          <span class="gradusInfo-span-gradus">{{dayOfWeek.apparent_temperature_min[0]}}ºc /
-            {{dayOfWeek.apparent_temperature_max[0]}}ºc</span>
+            {{this.currentWeather.temperature_2m}}ºc</h1>
+          <span class="gradusInfo-span-gradus">{{dailyWeather.apparent_temperature_min[0]}}ºc /
+            {{dailyWeather.apparent_temperature_max[0]}}ºc</span>
           <span class="gradusInfo-span-text">{{cloudState}}</span>
         </div>
-        <div class="current-weather-icon">
-          <img [src]="iconCurrentWeatherState" alt="night-cloud">
-        </div>
+        <img class="icon-weather" [src]="weatherCurrentIcon" alt="weather-state">
       </div>
     </div>
   </header>
@@ -32,7 +30,7 @@
             </svg>
             <span class="fullWeather-group-info-span">Ощущаемая температура</span>
           </div>
-          <span class="fullWeather-group-info-cel">{{currentWeather.current.apparent_temperature}}ºc</span>
+          <span class="fullWeather-group-info-cel">{{currentWeather.apparent_temperature}}ºc</span>
         </div>
 
         <div class="fullWeather-group">
@@ -45,7 +43,7 @@
             </svg>
             <span class="fullWeather-group-info-span">Вероятность дождя</span>
           </div>
-          <span class="fullWeather-group-info-cel">{{dayOfWeek.precipitation_probability_max[0]}}%</span>
+          <span class="fullWeather-group-info-cel">{{dailyWeather.precipitation_probability_max[0]}}%</span>
         </div>
 
         <div class="fullWeather-group">
@@ -59,7 +57,7 @@
 
             <span class="fullWeather-group-info-span">Скорость ветра</span>
           </div>
-          <span class="fullWeather-group-info-cel">{{currentWeather.current.wind_speed_10m}} км/ч</span>
+          <span class="fullWeather-group-info-cel">{{currentWeather.wind_speed_10m}} км/ч</span>
         </div>
         <div class="fullWeather-group">
           <div class="fullWeather-group-info">
@@ -71,7 +69,7 @@
             </svg>
             <span class="fullWeather-group-info-span">Влажность воздуха</span>
           </div>
-          <span class="fullWeather-group-info-cel">{{currentWeather.current.relative_humidity_2m}}%</span>
+          <span class="fullWeather-group-info-cel">{{currentWeather.relative_humidity_2m}}%</span>
         </div>
         <div class="fullWeather-group">
           <div class="fullWeather-group-info">
@@ -84,19 +82,19 @@
 
             <span class="fullWeather-group-info-span">УФ-индекс</span>
           </div>
-          <span class="fullWeather-group-info-cel">{{dayOfWeek.uv_index_max[0]}}</span>
+          <span class="fullWeather-group-info-cel">{{dailyWeather.uv_index_max[0]}}</span>
         </div>
       </div>
     </div>
   </main>
   <footer class="weather-footer">
     <div class="weatherForFiveDays">
-      <div class="weather-cart-day" *ngFor="let day of dayOfWeek.time.slice(1); let i = index">
+      <div class="weather-cart-day" *ngFor="let day of dailyWeather.time.slice(1); let i = index">
         <span class="dayOfWeek">{{ day | date: 'EEE' | titlecase }}</span>
-        <img class="weather-icon-day" width="56" height="56" [src]="changeIconWeather(dayOfWeek.weather_code[i + 1])"
+        <img class="weather-icon-day" width="56" height="56" [src]="getWeatherDaily(dailyWeather.weather_code[i + 1])"
           alt="icon">
-        <span class="temp-max">{{ dayOfWeek.apparent_temperature_max[i + 1] }}ºc</span>
-        <span class="temp-min">{{ dayOfWeek.apparent_temperature_min[i + 1] }}ºc</span>
+        <span class="temp-max">{{ dailyWeather.apparent_temperature_max[i + 1] }}ºc</span>
+        <span class="temp-min">{{ dailyWeather.apparent_temperature_min[i + 1] }}ºc</span>
       </div>
     </div>
   </footer>

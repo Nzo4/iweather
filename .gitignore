@@ -43,3 +43,4 @@ Thumbs.db
 
 # Othet 
 .env
+/src/app/environments

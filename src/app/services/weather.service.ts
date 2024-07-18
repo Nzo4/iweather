@@ -10,7 +10,7 @@ export class WeatherService {
   constructor(private http: HttpClient) { }
 
   findLocation(address: string): Observable<any> {
-    return this.http.get(`https://api.locationiq.com/v1/autocomplete?key=${environment.ACCESS_TOKEN}&q=${address}&limit=5&dedupe=1&`)
+    return this.http.get(`https://api.locationiq.com/v1/autocomplete?key=${environment.ACCESS_TOKEN}&q=${address}&limit=3&dedupe=1&`)
   }
 
   getWeatherData(latitude: string, longitude: string): Observable<any> {

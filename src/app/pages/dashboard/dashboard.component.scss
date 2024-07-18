@@ -2,7 +2,7 @@
 @import '../../styles/media.scss';
 
 .weather-header {
-  padding: 12px;
+  width: 100%;
   background: var(--gray-800);
   border-radius: 12px;
   margin-top: 12px;
@@ -19,10 +19,9 @@
 
 .date {
   display: flex;
-  justify-content: start;
-  align-items: start;
   flex-direction: column;
-  padding: 20px;
+  height: auto;
+  padding: 20px 20px 0 20px;
 
   &-city {
     @include heading-sm;
@@ -36,22 +35,17 @@
 }
 
 .shortWeather {
+  display: flex;
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  padding-inline: 20px;
-
-  @include mobile {
-    grid-template-columns: repeat(2, 40%);
-  }
+  justify-content: space-between;
 }
 
 .gradusInfo {
   display: flex;
   justify-content: center;
-  align-items: start;
   flex-direction: column;
-  flex-shrink: 1;
+  padding-left: 16px;
+  padding-bottom: 16px;
 
   &-h1 {
     @include heading-xl;
@@ -121,7 +115,6 @@
   border-radius: 12px;
 }
 
-.current-weather-icon {}
 
 .weather-cart-day {
   display: flex;
@@ -129,6 +122,8 @@
   align-items: center;
   flex-direction: column;
 }
+
+.icon-weather {}
 
 .dayOfWeek {
   @include heading-md;

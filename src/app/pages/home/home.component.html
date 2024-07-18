@@ -10,8 +10,10 @@
     <input (input)="suggestLocation(locationName)" [(ngModel)]="locationName" class="search-input" type="text"
       placeholder="Искать местоположение">
     <ng-template [ngIf]="currentlocations.length">
-      <div *ngFor="let location of currentlocations" class="locations">
-        <span (click)="getWeatherPlan(location.display_place)" class="city">{{location.display_place}}</span>
+      <div class="locations">
+        <ng-container *ngFor="let location of currentlocations">
+          <span (click)="getWeatherPlan(location.display_place)" class="city">{{location.display_place}}</span>
+        </ng-container>
       </div>
     </ng-template>
   </main>
