@@ -15,6 +15,8 @@
   flex-direction: column;
   border-radius: 8px;
   height: 300px;
+  background-size: cover;
+  background-position: center;
 }
 
 .date {
@@ -123,7 +125,6 @@
   flex-direction: column;
 }
 
-.icon-weather {}
 
 .dayOfWeek {
   @include heading-md;
@@ -144,5 +145,60 @@
   color: var(--white);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
+
+}
+
+.weather-icon-day {
+  width: 100%;
+  height: 100%;
+}
+
+.clear-day-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/clear-day-bg.png');
+}
+
+.few-cloudy-day-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/few-cloudy-day-bg.png');
+}
+
+.cloudy-day-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/cloudy-day-bg.png');
+}
+
+.rain-day-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/rain-day-bg.png');
+}
+
+.storm-day-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/storm-day-bg.png');
+}
+
+.clear-night-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/clear-night-bg.png');
+}
+
+.few-cloudy-night-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/few-cloudy-night-bg.png');
+}
+
+.cloudy-night-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/cloudy-night-bg.png');
+}
+
+.rain-night-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/rain-night-bg.png');
+}
+
+.rain-night-bg {
+  background-image: url('../../../assets/images/weather-backgrounds/storm-night-bg.png');
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-block-start: 50vh;
+  transform: translateY(-50%);
+  margin-inline: auto;
 
 }

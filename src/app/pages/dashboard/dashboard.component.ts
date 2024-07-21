@@ -1,12 +1,10 @@
 import { CommonModule, registerLocaleData } from "@angular/common";
-import { Component, LOCALE_ID } from "@angular/core";
+import { Component, LOCALE_ID, OnInit } from "@angular/core";
 import { ActivatedRoute, } from "@angular/router";
-import { CurrentWeather, DailyWeather } from "src/app/constants/weather";
+import { CurrentWeather, DailyWeather, Weather } from "src/app/constants/weather";
 import { WeatherService } from "src/app/services/weather.service";
 import localeRu from '@angular/common/locales/ru';
 
-
-registerLocaleData(localeRu, 'ru-RU');
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +15,7 @@ registerLocaleData(localeRu, 'ru-RU');
   providers: [{ provide: LOCALE_ID, useValue: 'ru-RU' }]
 })
 
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   currentWeather: CurrentWeather = {
     time: '',
     interval: 0,
@@ -41,109 +39,112 @@ export class DashboardComponent {
     uv_index_max: [],
   }
 
-  weatherMap = new Map([
-    ["day-clear", { isDay: 1, isRain: 0, cloudCover: ["Ясная погода", "Незначительная облачность"] }],
-    ["day-few-cloudy", { isDay: 1, isRain: 0, cloudCover: ["Небольшая облачность"] }],
-    ["day-cloudy", { isDay: 1, isRain: 0, cloudCover: ["Значительная облачность", "Облачно", "Пасмурно"] }],
-    ["day-rain", { isDay: 1, isRain: 1 }],
-    ["night-clear", { isDay: 0, isRain: 0, cloudCover: ["Ясная погода", "Незначительная облачность"] }],
-    ["night-few-cloudy", { isDay: 0, isRain: 0, cloudCover: ["Небольшая облачность"] }],
-    ["night-cloudy", { isDay: 0, isRain: 0, cloudCover: ["Значительная облачность", "Облачно", "Пасмурно"] }],
-    ["night-rain", { isDay: 0, isRain: 1 }]
+  weatherMap = new Map<string, { isDay: number, weatherCodes: number[] }>([
+    ["day-clear", { isDay: 1, weatherCodes: [0] }],
+    ["day-few-cloudy", { isDay: 1, weatherCodes: [1, 2] }],
+    ["day-cloudy", { isDay: 1, weatherCodes: [3] }],
+    ["day-rain", { isDay: 1, weatherCodes: [61, 63, 65, 80, 81, 82] }],
+    ["day-storm", { isDay: 1, weatherCodes: [95, 96, 97, 98, 99] }],
+    ["night-clear", { isDay: 0, weatherCodes: [0] }],
+    ["night-few-cloudy", { isDay: 0, weatherCodes: [1, 2] }],
+    ["night-cloudy", { isDay: 0, weatherCodes: [3] }],
+    ["night-rain", { isDay: 0, weatherCodes: [61, 63, 65, 80, 81, 82] }],
+    ["night-storm", { isDay: 0, weatherCodes: [95, 96, 97, 98, 99] }]
   ]);
 
   address!: string;
   cloudState!: string;
   weatherCurrentIcon!: string;
+  nameCurrentWeather!: string;
+  isLoading: boolean = false;
+  lat!: string;
+  lon!: string;
 
   constructor(private weatherService: WeatherService, private route: ActivatedRoute,) {
-    this.route.queryParams.subscribe((params) => {
-      const { address, lat, lon } = params;
-      this.address = address;
-      this.weatherService.getWeatherData(lat, lon).subscribe(weather => {
-        this.currentWeather = weather.current;
-        this.dailyWeather = weather.daily;
-        this.cloudState = this.cloudCoverCalc(this.currentWeather.cloud_cover);
-        this.changeCurrentWeather(this.currentWeather.is_day, this.currentWeather.rain, this.cloudState);
-      })
-    })
+    registerLocaleData(localeRu, 'ru-RU');
   }
 
-  cloudCoverCalc(cloudCover: number): string {
-    if (cloudCover >= 0 && cloudCover <= 10) {
-      return 'Ясная погода';
-    } else if (cloudCover > 10 && cloudCover <= 40) {
-      return 'Незначительная облачность';
-    } else if (cloudCover > 40 && cloudCover <= 70) {
-      return 'Небольшая облачность';
-    } else if (cloudCover > 70 && cloudCover <= 80) {
-      return 'Значительная облачность';
-    } else if (cloudCover > 80 && cloudCover <= 89) {
-      return 'Облачно';
-    } else if (cloudCover > 90 && cloudCover <= 100) {
-      return 'Пасмурно';
-    } else {
-      return 'Неопределенно';
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      const { address, lat, lon } = params;
+      if (address && lat && lon) {
+        this.address = address;
+        this.lat = lat;
+        this.lon = lon;
+      }
+    });
+    this.fetchWeather();
+
+  }
+
+  fetchWeather() {
+    if (this.lat && this.lon) {
+      this.isLoading = true;
+      this.weatherService.getWeatherData(this.lat, this.lon).subscribe({
+        next: (weather: Weather) => {
+          this.currentWeather = weather.current;
+          this.dailyWeather = weather.daily;
+          this.cloudState = this.calculateWeatherCode(this.currentWeather.weather_code);
+          this.updateWeather();
+          this.isLoading = false;
+
+        },
+        error: (err) => {
+          console.error('Ошибка получения данных', err);
+          this.isLoading = false;
+        }
+      });
     }
   }
 
-  getWeather(isDay: number, isRain: number, cloudState: string) {
-    for (let [key, value] of this.weatherMap.entries()) {
-      if (value.isDay === isDay && value.isRain === isRain && (value.cloudCover ? value.cloudCover.includes(cloudState) : true)) {
+  updateWeather() {
+    this.nameCurrentWeather = this.calculateWeather(this.currentWeather.is_day, this.currentWeather.weather_code);
+    this.weatherCurrentIcon = this.getWeatherIcon(this.nameCurrentWeather);
+  }
+
+  calculateWeather(isDay: number, weatherCode: number): string {
+    for (let [key, value] of this.weatherMap) {
+      if (value.isDay === isDay && value.weatherCodes.includes(weatherCode)) {
         return key;
       }
     }
-    return true;
+    return '';
   }
 
-  changeCurrentWeather(isDay: number, isRain: number, cloudState: string) {
-    const currentWeather = this.getWeather(isDay, isRain, cloudState);
-    const backgroundImg = document.getElementsByClassName('weather-block-header')[0] as HTMLElement;
-    switch (currentWeather) {
-      case 'day-clear': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/clear-day-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/clear-day-icon.svg';
-        break;
-      };
-      case 'day-few-cloudy': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/few-cloudy-day-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/few-cloudy-day-icon.svg';
-        break;
-      }
-      case 'day-cloudy': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/cloudy-day-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/cloudy-day-icon.svg';
-        break;
-      }
-      case 'day-rain': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/rain-day-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/rain-day-icon.svg';
-        break;
-      }
-      case 'night-clear': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/clear-night-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/clear-night-icon.svg';
-        break;
-      }
-      case 'night-few-cloudy': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/few-cloudy-night-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/few-cloudy-night-icon.svg';
-        break;
-      }
-      case 'night-cloudy': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/cloudy-night-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/cloudy-night-icon.svg';
-        break;
-      }
-      case 'night-rain': {
-        backgroundImg.style.backgroundImage = "url('../../../assets/images/weather-backgrounds/rain-night-bg.png')";
-        this.weatherCurrentIcon = '../../../assets/icons/weather-icons/rain-night-icon.svg';
-        break;
-      }
+  calculateWeatherCode(weatherCode: number): string {
+    switch (weatherCode) {
+      case 0:
+        return 'Чистое небо';
+      case 1:
+        return 'Преимущественно ясно';
+      case 2:
+        return 'Переменная облачность';
+      case 3:
+        return 'Пасмурно';
+      case 61:
+        return 'Слабый дождь';
+      case 63:
+        return 'Умеренный дождь';
+      case 65:
+        return 'Сильный дождь';
+      case 80:
+        return 'Слабый ливневый дождь';
+      case 81:
+        return 'Умеренный ливневый дождь';
+      case 82:
+        return 'Сильный ливневый дождь';
+      case 95:
+        return 'Гроза'
+      case 96:
+        return 'Гроза с небольшим градом';
+      case 99:
+        return 'Гроза с сильным градом';
+      default:
+        return 'Неопределенно';
     }
   }
 
-  getWeatherDaily(weatherCode: number): string {
+  renderingDailyWeather(weatherCode: number): string {
     switch (weatherCode) {
       case 0:
         return "../../../assets/icons/weather-icons/clear-day-icon.svg";
@@ -168,6 +169,34 @@ export class DashboardComponent {
     }
   }
 
+  getWeatherIcon(weather: string): string {
+    switch (weather) {
+      case 'day-clear':
+        return '../../../assets/icons/weather-icons/clear-day-icon.svg';
+      case 'day-few-cloudy':
+        return '../../../assets/icons/weather-icons/few-cloudy-day-icon.svg';
+      case 'day-cloudy':
+        return '../../../assets/icons/weather-icons/cloudy-day-icon.svg';
+      case 'day-rain':
+        return '../../../assets/icons/weather-icons/rain-day-icon.svg';
+      case 'day-storm':
+        return '../../../assets/icons/weather-icons/storm-day-icon.svg';
+      case 'night-clear':
+        return '../../../assets/icons/weather-icons/clear-night-icon.svg';
+      case 'night-few-cloudy':
+        return '../../../assets/icons/weather-icons/few-cloudy-night-icon.svg';
+      case 'night-cloudy':
+        return '../../../assets/icons/weather-icons/cloudy-night-icon.svg';
+      case 'night-rain':
+        return '../../../assets/icons/weather-icons/rain-night-icon.svg';
+      case 'night-storm':
+        return '../../../assets/icons/weather-icons/storm-night-icon.svg'
+      default:
+        return '';
+    }
+  }
 }
+
+
 
 
